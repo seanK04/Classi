@@ -38,33 +38,40 @@ userSchema.methods.addAchievement = async function(type, name, description) {
   await this.save();
 };
 
-// Method to update rankings using binary search
-userSchema.methods.insertCourseRanking = async function(courseId, comparisonResults) {
+// Method to get next course for comparison during binary search
+userSchema.methods.getNextComparisonCourse = function(left, right) {
   const currentRankings = this.rankedCourses.sort((a, b) => a.rank - b.rank);
-  let left = 0;
-  let right = currentRankings.length;
+  if (currentRankings.length === 0) return null;
   
-  // Binary search to find insertion point
-  while (left < right) {
-    const mid = Math.floor((left + right) / 2);
-    if (comparisonResults[mid] > 0) {
-      right = mid;
-    } else {
-      left = mid + 1;
-    }
+  const mid = Math.floor((left + right) / 2);
+  return {
+    course: currentRankings[mid]?.course,
+    position: mid,
+    isComplete: left >= right
+  };
+};
+
+// Method to update rankings using interactive binary search
+userSchema.methods.insertCourseRanking = async function(courseId, position) {
+  const currentRankings = this.rankedCourses.sort((a, b) => a.rank - b.rank);
+  
+  // If this is the first course being ranked
+  if (currentRankings.length === 0) {
+    this.rankedCourses.push({ course: courseId, rank: 0 });
+    this.stats.totalRankings += 1;
+    await this.save();
+    return 0;
   }
   
-  // Insert the new course at the determined position
-  const newRank = left;
-  
-  // Shift existing rankings
+  // Shift existing rankings to make space for new course
   for (let i = 0; i < currentRankings.length; i++) {
-    if (currentRankings[i].rank >= newRank) {
+    if (currentRankings[i].rank >= position) {
       currentRankings[i].rank += 1;
     }
   }
   
-  this.rankedCourses.push({ course: courseId, rank: newRank });
+  // Insert the new course at the determined position
+  this.rankedCourses.push({ course: courseId, rank: position });
   this.stats.totalRankings += 1;
   
   // Check for ranking milestones
@@ -78,7 +85,7 @@ userSchema.methods.insertCourseRanking = async function(courseId, comparisonResu
   }
   
   await this.save();
-  return newRank;
+  return position;
 };
 
 module.exports = mongoose.model("User", userSchema);
