@@ -1,0 +1,44 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/john_rathgeber/.nvm/v0.8.28/bin/node',
+1 verbose cli   '/home/john_rathgeber/.nvm/v0.8.28/bin/npm',
+1 verbose cli   'view',
+1 verbose cli   '--json',
+1 verbose cli   '--',
+1 verbose cli   'nodemon',
+1 verbose cli   'description',
+1 verbose cli   'dist-tags.latest',
+1 verbose cli   'homepage',
+1 verbose cli   'version',
+1 verbose cli   'time' ]
+2 info using npm@1.2.30
+3 info using node@v0.8.28
+4 verbose url raw nodemon
+5 verbose url resolving [ 'https://registry.npmjs.org/', './nodemon' ]
+6 verbose url resolved https://registry.npmjs.org/nodemon
+7 info trying registry request attempt 1 at 13:37:08
+8 http GET https://registry.npmjs.org/nodemon
+9 info retry will retry, error on last attempt: Error: 140718636148544:error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version:../deps/openssl/openssl/ssl/s23_clnt.c:658:
+10 info trying registry request attempt 2 at 13:37:19
+11 http GET https://registry.npmjs.org/nodemon
+12 info retry will retry, error on last attempt: Error: 140718636148544:error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version:../deps/openssl/openssl/ssl/s23_clnt.c:658:
+13 info trying registry request attempt 3 at 13:38:19
+14 http GET https://registry.npmjs.org/nodemon
+15 error Error: 140718636148544:error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version:../deps/openssl/openssl/ssl/s23_clnt.c:658:
+15 error
+15 error     at CleartextStream._puller (tls.js:670:24)
+15 error     at CleartextStream.CryptoStream._pull (tls.js:604:19)
+15 error     at SecurePair.cycle (tls.js:894:20)
+15 error     at EncryptedStream.CryptoStream.write (tls.js:285:13)
+15 error     at Socket.ondata (stream.js:38:26)
+15 error     at Socket.EventEmitter.emit (events.js:96:17)
+15 error     at TCP.onread (net.js:397:14)
+16 error If you need help, you may report this log at:
+16 error     <http://github.com/isaacs/npm/issues>
+16 error or email it to:
+16 error     <npm-@googlegroups.com>
+17 error System Linux 5.15.167.4-microsoft-standard-WSL2
+18 error command "/home/john_rathgeber/.nvm/v0.8.28/bin/node" "/home/john_rathgeber/.nvm/v0.8.28/bin/npm" "view" "--json" "--" "nodemon" "description" "dist-tags.latest" "homepage" "version" "time"
+19 error cwd /home/john_rathgeber/hackathons/Classi/backend
+20 error node -v v0.8.28
+21 error npm -v 1.2.30
+22 verbose exit [ 1, true ]
