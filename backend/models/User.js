@@ -9,12 +9,6 @@ const userSchema = new mongoose.Schema({
       rank: { type: Number, required: true }
     }
   ],
-  rankedProfessors: [
-    {
-      professor: { type: mongoose.Schema.Types.ObjectId, ref: "Professor" },
-      rank: { type: Number, required: true }
-    }
-  ],
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

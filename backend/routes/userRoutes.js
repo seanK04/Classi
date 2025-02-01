@@ -3,6 +3,22 @@ const User = require("../models/User");
 
 const router = express.Router();
 
+// Create a new user
+router.post("/", async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    if (!name || !email) {
+      return res.status(400).json({ error: "Name and email are required" });
+    }
+
+    const newUser = new User({ name, email });
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get user rankings
 router.get("/:id/rankings", async (req, res) => {
   try {

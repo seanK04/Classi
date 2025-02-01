@@ -6,7 +6,7 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-app.use(express.json()); // ✅ Ensures JSON request bodies are parsed
+app.use(express.json());
 app.use(cors());
 
 // Connect to MongoDB
