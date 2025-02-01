@@ -63,9 +63,38 @@ router.get("/:id/rankings", checkUser, async (req, res) => {
   }
 });
 
-// Pairwise comparison endpoint
-router.post("/:id/compare", checkUser, async (req, res) => {
-  const { courseId, comparisonResults } = req.body;
+// Get next course for comparison
+router.get("/:id/next-comparison", checkUser, async (req, res) => {
+  const { left, right } = req.query;
+  
+  try {
+    const comparison = req.user.getNextComparisonCourse(
+      parseInt(left || 0),
+      parseInt(right || req.user.rankedCourses.length)
+    );
+    
+    if (comparison && comparison.course) {
+      await req.user.populate('rankedCourses.course');
+      const courseToCompare = req.user.rankedCourses.find(
+        rc => rc.course._id.toString() === comparison.course.toString()
+      )?.course;
+      
+      res.json({
+        course: courseToCompare,
+        position: comparison.position,
+        isComplete: comparison.isComplete
+      });
+    } else {
+      res.json({ isComplete: true });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Insert course at determined position
+router.post("/:id/insert-ranking", checkUser, async (req, res) => {
+  const { courseId, position } = req.body;
   
   try {
     const course = await Course.findById(courseId);
@@ -73,7 +102,7 @@ router.post("/:id/compare", checkUser, async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    const newRank = await req.user.insertCourseRanking(courseId, comparisonResults);
+    const newRank = await req.user.insertCourseRanking(courseId, position);
     
     // Update course totalRankings
     course.totalRankings += 1;
