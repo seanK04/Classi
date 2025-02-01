@@ -1,2 +1,3 @@
 # Classi
-Next.js + Express.js + Firebase
+
+Next.js + Express.js + MongoDB
