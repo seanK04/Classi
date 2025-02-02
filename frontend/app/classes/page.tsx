@@ -4,7 +4,7 @@ export default function ClassesPage() {
   const classList = [
     {
       id: 1,
-      name: "CSCI0150 || Introduction to Object Oriented Programming",
+      name: "Introduction to Object Oriented Programming",
       department: "Computer Science",
       difficulty: "3.6/5.0",
       status: "Open",
@@ -59,11 +59,6 @@ export default function ClassesPage() {
           </div>
         ))}
       </div>
-
-      {/* Floating "View Map" Button */}
-      <button className="fixed bottom-16 right-4 px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition duration-200">
-        View Schedule
-      </button>
     </div>
   );
 }
