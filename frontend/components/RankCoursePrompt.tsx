@@ -36,8 +36,8 @@ export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: Ra
         if (sortedCourses.length > 0) {
           setCurrentComparison(sortedCourses[Math.floor(sortedCourses.length / 2)]);
         } else {
-          // If no courses exist, assign rank of 1
-          handleComplete(1);
+          // If no courses exist, assign rank of 0
+          handleComplete(0);
         }
         setLoading(false);
       } catch (error) {
@@ -112,7 +112,7 @@ export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: Ra
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-        <h2 className="text-xl font-bold mb-4">Which course do you prefer?</h2>
+        <h2 className="text-xl text-black font-bold mb-4">Which course do you prefer?</h2>
         
         <div className="grid grid-cols-2 gap-4">
           {/* New Course Button */}
@@ -120,7 +120,7 @@ export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: Ra
             onClick={() => handlePrefer(true)}
             className="p-4 border rounded hover:bg-gray-50 transition-colors"
           >
-            <h3 className="font-bold">{newCourse.title}</h3>
+            <h3 className="font-bold text-black">{newCourse.title}</h3>
             <p className="text-sm text-gray-600">{newCourse.code}</p>
           </button>
 
@@ -129,7 +129,7 @@ export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: Ra
             onClick={() => handlePrefer(false)}
             className="p-4 border rounded hover:bg-gray-50 transition-colors"
           >
-            <h3 className="font-bold">{currentComparison?.title}</h3>
+            <h3 className="font-bold text-black">{currentComparison?.title}</h3>
             <p className="text-sm text-gray-600">{currentComparison?.code}</p>
           </button>
         </div>

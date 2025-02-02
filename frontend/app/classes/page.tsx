@@ -15,7 +15,7 @@ export default function ClassesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch('/api/courses');
+        const response = await fetch('http://localhost:3001/api/courses');
         const data = await response.json();
         // Sort by rank in ascending order (1 to n)
         const sortedCourses = data.sort((a: Course, b: Course) => a.rank - b.rank);

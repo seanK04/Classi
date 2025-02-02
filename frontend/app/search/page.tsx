@@ -8,27 +8,27 @@ export default function SearchPage() {
     {
       id: 1,
       name: "Intro to Object Oriented Programming",
-      time: "10:00am - 10:50am",
+      code: "CSCI0001",
     },
     {
       id: 2,
       name: "Data Structures and Algorithms",
-      time: "11:00am - 11:50am",
+      code: "CSCI0002",
     },
     {
       id: 3,
       name: "Linear Algebra",
-      time: "9:00am - 9:50am",
+      code: "MATH1520",
     },
     {
       id: 4,
       name: "Introduction to Software Engineering",
-      time: "2:00pm - 3:15pm",
+      code: "CSCI0320",
     },
     {
       id: 5,
       name: "Machine Learning",
-      time: "1:00pm - 2:15pm",
+      code: "CSCI1540",
     },
   ];
 
@@ -66,10 +66,10 @@ export default function SearchPage() {
     applyFilter(filter);
   };
 
-  const handleAddClick = (course: { id: number; name: string; time: string }) => {
+  const handleAddClick = (course: { id: number; name: string; code: string }) => {
     setSelectedCourse({
       title: course.name,
-      code: course.id.toString()
+      code: course.code,
     });
     setShowRankPrompt(true);
   };
@@ -135,7 +135,7 @@ export default function SearchPage() {
             >
               <div>
                 <p className="font-semibold text-lg text-blue-800">{course.name}</p>
-                <p className="text-sm text-gray-500">{course.time}</p>
+                <p className="text-sm text-gray-500">{course.code}</p>
               </div>
               <div className="flex items-center space-x-4">
                 <button
