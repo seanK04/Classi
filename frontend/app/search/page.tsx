@@ -1,49 +1,55 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, MapPin, Plus, Bookmark } from "lucide-react";
 import RankCoursePrompt from "@/components/RankCoursePrompt";
 
+interface Course {
+  id: number;
+  name: string;
+  time: string;
+}
+
+interface RankedCourse {
+  title: string;
+  code: string;
+  rank: number;
+}
+
 export default function SearchPage() {
-  const classResults = [
-    {
-      id: 1,
-      name: "Intro to Object Oriented Programming",
-      time: "10:00am - 10:50am",
-    },
-    {
-      id: 2,
-      name: "Data Structures and Algorithms",
-      time: "11:00am - 11:50am",
-    },
-    {
-      id: 3,
-      name: "Linear Algebra",
-      time: "9:00am - 9:50am",
-    },
-    {
-      id: 4,
-      name: "Introduction to Software Engineering",
-      time: "2:00pm - 3:15pm",
-    },
-    {
-      id: 5,
-      name: "Machine Learning",
-      time: "1:00pm - 2:15pm",
-    },
+  const classResults: Course[] = [
+    { id: 1, name: "Intro to Object Oriented Programming", time: "10:00am - 10:50am" },
+    { id: 2, name: "Data Structures and Algorithms", time: "11:00am - 11:50am" },
+    { id: 3, name: "Linear Algebra", time: "9:00am - 9:50am" },
+    { id: 4, name: "Introduction to Software Engineering", time: "2:00pm - 3:15pm" },
+    { id: 5, name: "Machine Learning", time: "1:00pm - 2:15pm" },
   ];
 
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredResults, setFilteredResults] = useState(classResults);
-  const [activeFilter, setActiveFilter] = useState<string>("Trending");
-  const [showRankPrompt, setShowRankPrompt] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<{title: string; code: string} | null>(null);
+  const [filteredResults, setFilteredResults] = useState<Course[]>(classResults);
+  const [showRankPrompt, setShowRankPrompt] = useState<boolean>(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [rankedCourses, setRankedCourses] = useState<RankedCourse[]>([]);
+
+  useEffect(() => {
+    // Fetch ranked courses on load
+    const fetchRankedCourses = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/api/courses");
+        const data = await response.json();
+        setRankedCourses(data);
+      } catch (error) {
+        console.error("Failed to fetch ranked courses:", error);
+      }
+    };
+    fetchRankedCourses();
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
     if (query === "") {
-      applyFilter(activeFilter);
+      setFilteredResults(classResults);
       return;
     }
 
@@ -53,25 +59,38 @@ export default function SearchPage() {
     setFilteredResults(results);
   };
 
-  const applyFilter = (filter: string) => {
-    if (filter === "Trending") {
-      setFilteredResults(classResults.filter((course) => course.id <= 3));
-    } else {
-      setFilteredResults(classResults);
-    }
-  };
-
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    applyFilter(filter);
-  };
-
-  const handleAddClick = (course: { id: number; name: string; time: string }) => {
-    setSelectedCourse({
-      title: course.name,
-      code: course.id.toString()
-    });
+  const handleAddClick = (course: Course) => {
+    setSelectedCourse(course);
     setShowRankPrompt(true);
+  };
+
+  const handleRankSubmit = async (rank: number) => {
+    if (!selectedCourse) return;
+
+    try {
+      const response = await fetch("http://localhost:3001/api/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: selectedCourse.name,
+          code: selectedCourse.id.toString(),
+          rank,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRankedCourses(data.sortedCourses); // Update frontend with sorted courses
+        alert(`${selectedCourse.name} added to your ranked list.`);
+      } else {
+        console.error("Failed to add course:", await response.json());
+      }
+    } catch (error) {
+      console.error("Failed to add course:", error);
+    } finally {
+      setShowRankPrompt(false);
+      setSelectedCourse(null);
+    }
   };
 
   return (
@@ -99,30 +118,6 @@ export default function SearchPage() {
           <MapPin className="w-5 h-5 text-gray-400" />
           <p className="text-sm">Brown University</p>
         </div>
-      </div>
-
-      {/* Filter Buttons */}
-      <div className="flex space-x-3 p-4">
-        <button
-          className={`px-4 py-2 text-sm font-medium rounded-full shadow-md transition duration-200 ${
-            activeFilter === "Trending"
-              ? "text-white bg-blue-600 hover:bg-blue-700"
-              : "text-blue-700 bg-blue-100 hover:bg-blue-200"
-          }`}
-          onClick={() => handleFilterChange("Trending")}
-        >
-          Trending
-        </button>
-        <button
-          className={`px-4 py-2 text-sm font-medium rounded-full shadow-md transition duration-200 ${
-            activeFilter === "All"
-              ? "text-white bg-blue-600 hover:bg-blue-700"
-              : "text-blue-700 bg-blue-100 hover:bg-blue-200"
-          }`}
-          onClick={() => handleFilterChange("All")}
-        >
-          All
-        </button>
       </div>
 
       {/* Search Results */}
@@ -159,25 +154,7 @@ export default function SearchPage() {
       {showRankPrompt && selectedCourse && (
         <RankCoursePrompt
           newCourse={selectedCourse}
-          onComplete={async (rank) => {
-            try {
-              await fetch('http://localhost:3001/api/courses', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  title: selectedCourse.title,
-                  code: selectedCourse.code,
-                  rank
-                })
-              });
-              setShowRankPrompt(false);
-              setSelectedCourse(null);
-            } catch (error) {
-              console.error('Failed to save course:', error);
-            }
-          }}
+          onComplete={handleRankSubmit}
           onCancel={() => {
             setShowRankPrompt(false);
             setSelectedCourse(null);
