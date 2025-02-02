@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { findInsertionPosition, insertCourse, getRankingsSize, getRankings } from '../lib/rankingSystem';
 
 interface Course {
   _id: string;
@@ -15,92 +16,95 @@ interface Course {
 interface ComparisonProps {
   userId: string;
   onComplete: () => void;
+  courseToCompare?: {
+    id: number;
+    name: string;
+    time: string;
+  };
 }
 
-export default function CourseComparison({ userId, onComplete }: ComparisonProps) {
-  const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
+export default function CourseComparison({ userId, onComplete, courseToCompare }: ComparisonProps) {
+  const [newCourse, setNewCourse] = useState<Course | null>(null);
+  const [comparisonCourse, setComparisonCourse] = useState<Course | null>(null);
   const [position, setPosition] = useState<number>(0);
   const [left, setLeft] = useState<number>(0);
   const [right, setRight] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Get initial rankings count to set right bound
-  const fetchInitialRankings = async () => {
-    try {
-      const response = await fetch(`/api/users/${userId}/rankings`);
-      const rankings = await response.json();
-      setRight(rankings.length);
-    } catch (error) {
-      console.error('Error fetching rankings:', error);
+  const getNextComparison = () => {
+    if (!newCourse) {
+      console.log('No new course to compare');
+      return;
     }
-  };
-
-  const fetchNextComparison = async () => {
+    
     try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/users/${userId}/next-comparison?left=${left}&right=${right}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      const data = await response.json();
-
-      if (data.isComplete) {
+      console.log('Getting next comparison with bounds:', { left, right });
+      const { position: newPosition, courseToCompare, isComplete } = findInsertionPosition(left, right);
+      console.log('Got comparison result:', { newPosition, courseToCompare, isComplete });
+      
+      if (isComplete) {
+        console.log('Comparison complete, inserting course at position:', newPosition);
+        insertCourse(newCourse, newPosition);
         onComplete();
         return;
       }
 
-      setCurrentCourse(data.course);
-      setPosition(data.position);
+      setPosition(newPosition);
+      setComparisonCourse(courseToCompare);
+      setLoading(false);
+      console.log('Set comparison course:', courseToCompare);
     } catch (error) {
-      console.error('Error fetching comparison:', error);
-    } finally {
+      console.error('Error getting next comparison:', error);
       setLoading(false);
     }
   };
 
-  const handleChoice = async (higher: boolean) => {
-    if (!currentCourse) return;
+  useEffect(() => {
+    if (courseToCompare) {
+      console.log('Initializing comparison with course:', courseToCompare);
+      setRight(getRankingsSize());
+      const course: Course = {
+        _id: courseToCompare.id.toString(),
+        title: courseToCompare.name,
+        code: courseToCompare.time,
+        department: "",
+        difficulty: 0,
+        workload: 0,
+      };
+      setNewCourse(course);
+    }
+  }, [courseToCompare]);
+
+  // Effect to handle comparison when bounds change
+  useEffect(() => {
+    if (newCourse) {
+      getNextComparison();
+    }
+  }, [left, right, newCourse]);
+
+  const handleChoice = (higher: boolean) => {
+    if (!newCourse) {
+      console.log('No course to rank');
+      return;
+    }
 
     try {
+      console.log('Handling choice:', higher ? 'higher' : 'lower');
       setLoading(true);
-      const newPosition = higher ? position + 1 : position;
       
-      await fetch(`/api/users/${userId}/insert-ranking`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId: currentCourse._id,
-          position: newPosition,
-        }),
-      });
-
       // Update binary search bounds
       if (higher) {
+        console.log('Moving bounds right:', { newLeft: position + 1, right });
         setLeft(position + 1);
       } else {
+        console.log('Moving bounds left:', { left, newRight: position });
         setRight(position);
       }
-
-      await fetchNextComparison();
     } catch (error) {
       console.error('Error updating ranking:', error);
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const initializeComparison = async () => {
-      await fetchInitialRankings();
-      await fetchNextComparison();
-    };
-    initializeComparison();
-  }, [userId]);
 
   if (loading) {
     return (
@@ -110,32 +114,53 @@ export default function CourseComparison({ userId, onComplete }: ComparisonProps
     );
   }
 
-  if (!currentCourse) {
+  if (!newCourse) {
     return null;
   }
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto my-8">
       <h2 className="text-xl font-bold text-center text-blue-800 mb-6">
-        Compare This Course
+        Compare These Courses
       </h2>
       
-      <div className="bg-blue-50 rounded-lg p-4 mb-6">
-        <h3 className="font-semibold text-lg text-blue-900">
-          {currentCourse.code} - {currentCourse.title}
-        </h3>
-        <p className="text-blue-700">{currentCourse.department}</p>
-        <div className="mt-2 space-y-1">
-          <p className="text-sm text-gray-600">
-            Difficulty: {currentCourse.difficulty.toFixed(1)}/5.0
-          </p>
-          <p className="text-sm text-gray-600">
-            Workload: {currentCourse.workload.toFixed(1)}/5.0
-          </p>
+      <div className="space-y-4">
+        {/* New Course */}
+        <div className="bg-blue-50 rounded-lg p-4">
+          <h3 className="font-semibold text-lg text-blue-900">
+            {newCourse.code} - {newCourse.title}
+          </h3>
+          <p className="text-blue-700">{newCourse.department}</p>
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-gray-600">
+              Difficulty: {newCourse.difficulty.toFixed(1)}/5.0
+            </p>
+            <p className="text-sm text-gray-600">
+              Workload: {newCourse.workload.toFixed(1)}/5.0
+            </p>
+          </div>
         </div>
+
+        {/* Comparison Course */}
+        {comparisonCourse && (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold text-lg text-gray-900">
+              {comparisonCourse.code} - {comparisonCourse.title}
+            </h3>
+            <p className="text-gray-700">{comparisonCourse.department}</p>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-gray-600">
+                Difficulty: {comparisonCourse.difficulty.toFixed(1)}/5.0
+              </p>
+              <p className="text-sm text-gray-600">
+                Workload: {comparisonCourse.workload.toFixed(1)}/5.0
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex justify-center space-x-4">
+      <div className="flex justify-center space-x-4 mt-6">
         <button
           onClick={() => handleChoice(false)}
           className="flex items-center px-6 py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition duration-200"

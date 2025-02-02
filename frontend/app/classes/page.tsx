@@ -1,5 +1,6 @@
 "use client"
 import { Share } from "lucide-react";
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 
 interface Course {
@@ -27,6 +28,23 @@ export default function ClassesPage() {
 
     fetchCourses();
   }, []);
+=======
+import { getCourse, getRankings } from "../../lib/rankingSystem";
+
+export default function ClassesPage() {
+  const rankings = getRankings();
+  const classList = rankings.map(courseId => {
+    const course = getCourse(courseId);
+    return {
+      id: course?._id,
+      name: course?.title,
+      department: course?.department,
+      difficulty: `${course?.difficulty.toFixed(1)}/5.0`,
+      status: "Open",
+      courseTime: course?.code,
+    };
+  });
+>>>>>>> 8e8d835bc0cc41a5f5f4677432baeb739ece9394
 
   const exportToCSV = () => {
     const csvContent = [

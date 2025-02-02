@@ -1,19 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Search, MapPin, Plus, Bookmark } from "lucide-react";
-import RankCoursePrompt from "@/components/RankCoursePrompt";
-
-interface Course {
-  id: number;
-  name: string;
-  time: string;
-}
-
-interface RankedCourse {
-  title: string;
-  code: string;
-  rank: number;
-}
+import CourseComparison from "../../components/CourseComparison";
 
 export default function SearchPage() {
   const classResults: Course[] = [
@@ -25,24 +13,14 @@ export default function SearchPage() {
   ];
 
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredResults, setFilteredResults] = useState<Course[]>(classResults);
-  const [showRankPrompt, setShowRankPrompt] = useState<boolean>(false);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [rankedCourses, setRankedCourses] = useState<RankedCourse[]>([]);
-
-  useEffect(() => {
-    // Fetch ranked courses on load
-    const fetchRankedCourses = async () => {
-      try {
-        const response = await fetch("http://localhost:3001/api/courses");
-        const data = await response.json();
-        setRankedCourses(data);
-      } catch (error) {
-        console.error("Failed to fetch ranked courses:", error);
-      }
-    };
-    fetchRankedCourses();
-  }, []);
+  const [filteredResults, setFilteredResults] = useState(classResults);
+  const [activeFilter, setActiveFilter] = useState<string>("Trending");
+  const [comparingCourse, setComparingCourse] = useState<{
+    id: number;
+    name: string;
+    time: string;
+  } | null>(null);
+  const [isComparisonComplete, setIsComparisonComplete] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
@@ -133,9 +111,12 @@ export default function SearchPage() {
                 <p className="text-sm text-gray-500">{course.time}</p>
               </div>
               <div className="flex items-center space-x-4">
-                <button
+                <button 
                   className="text-gray-400 hover:text-blue-600 transition duration-200"
-                  onClick={() => handleAddClick(course)}
+                  onClick={() => {
+                    setComparingCourse(result);
+                    setIsComparisonComplete(false);
+                  }}
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -150,16 +131,31 @@ export default function SearchPage() {
         )}
       </div>
 
-      {/* Rank Course Prompt */}
-      {showRankPrompt && selectedCourse && (
-        <RankCoursePrompt
-          newCourse={selectedCourse}
-          onComplete={handleRankSubmit}
-          onCancel={() => {
-            setShowRankPrompt(false);
-            setSelectedCourse(null);
-          }}
-        />
+      {/* Course Comparison Modal */}
+      {comparingCourse && !isComparisonComplete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-4 m-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-blue-800">Rank This Course</h2>
+              <button 
+                onClick={() => setComparingCourse(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+            <CourseComparison
+              userId="test-user"
+              courseToCompare={comparingCourse}
+              onComplete={() => {
+                setIsComparisonComplete(true);
+                setComparingCourse(null);
+                // You could add a toast notification here
+                // to confirm the course was added to rankings
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
