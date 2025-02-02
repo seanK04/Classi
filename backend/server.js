@@ -6,20 +6,21 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-app.use(express.json()); // Parse JSON request body
-app.use(cors()); // Enable CORS
+app.use(express.json());
+app.use(cors());
 
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error(err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
-// Basic route
-app.get("/", (req, res) => {
-  res.send("Welcome to the Course Review API!");
-});
+// Import routes
+const userRoutes = require("./routes/userRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 
-// Start server
+app.use("/api/users", userRoutes);
+app.use("/api/courses", courseRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
