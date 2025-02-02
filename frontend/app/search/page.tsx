@@ -1,6 +1,6 @@
-"use client"
+"use client";
 import React, { useState } from "react";
-import { Search, MapPin, Plus, Bookmark, X } from "lucide-react";
+import { Search, MapPin, Plus, Bookmark } from "lucide-react";
 
 export default function SearchPage() {
   const classResults = [
@@ -108,13 +108,14 @@ export default function SearchPage() {
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filteredResults, setFilteredResults] = useState(classResults);
+  const [activeFilter, setActiveFilter] = useState<string>("Trending");
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
     if (query === "") {
-      setFilteredResults(classResults);
+      applyFilter(activeFilter);
       return;
     }
 
@@ -125,22 +126,25 @@ export default function SearchPage() {
     setFilteredResults(results);
   };
 
+  const applyFilter = (filter: string) => {
+    if (filter === "Trending") {
+      setFilteredResults(classResults.filter((course) => course.id <= 10)); // Example filter
+    } else {
+      setFilteredResults(classResults);
+    }
+  };
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    applyFilter(filter);
+  };
+
   return (
     <div className="min-h-screen bg-blue-50">
       {/* Header */}
       <header className="sticky top-0 bg-white shadow-md z-50">
         <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
-          <div className="flex space-x-6">
-            <button className="text-blue-700 font-semibold border-b-2 border-blue-700">
-              Classes
-            </button>
-            <button className="text-gray-500 hover:text-gray-700 transition duration-200">
-              Members
-            </button>
-          </div>
-          <button className="text-gray-500 hover:text-gray-700 transition duration-200">
-            <X className="w-6 h-6" />
-          </button>
+          <h1 className="text-blue-700 font-semibold">Search Classes</h1>
         </div>
       </header>
 
@@ -156,24 +160,33 @@ export default function SearchPage() {
             className="w-full bg-transparent outline-none text-gray-700"
           />
         </div>
-        <div className="mt-3 flex items-center justify-between text-gray-500">
-          <div className="flex items-center space-x-2">
-            <MapPin className="w-5 h-5 text-gray-400" />
-            <p className="text-sm">Brown University</p>
-          </div>
-          <button className="text-gray-500 hover:text-gray-700 transition duration-200">
-            <X className="w-5 h-5" />
-          </button>
+        <div className="mt-3 flex items-center space-x-2 text-gray-500">
+          <MapPin className="w-5 h-5 text-gray-400" />
+          <p className="text-sm">Brown University</p>
         </div>
       </div>
 
       {/* Filter Buttons */}
       <div className="flex space-x-3 p-4">
-        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full shadow-md hover:bg-blue-700 transition duration-200">
+        <button
+          className={`px-4 py-2 text-sm font-medium rounded-full shadow-md transition duration-200 ${
+            activeFilter === "Trending"
+              ? "text-white bg-blue-600 hover:bg-blue-700"
+              : "text-blue-700 bg-blue-100 hover:bg-blue-200"
+          }`}
+          onClick={() => handleFilterChange("Trending")}
+        >
           Trending
         </button>
-        <button className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-full shadow-md hover:bg-blue-200 transition duration-200">
-          Friend Recs
+        <button
+          className={`px-4 py-2 text-sm font-medium rounded-full shadow-md transition duration-200 ${
+            activeFilter === "All"
+              ? "text-white bg-blue-600 hover:bg-blue-700"
+              : "text-blue-700 bg-blue-100 hover:bg-blue-200"
+          }`}
+          onClick={() => handleFilterChange("All")}
+        >
+          All
         </button>
       </div>
 
@@ -195,9 +208,6 @@ export default function SearchPage() {
                 </button>
                 <button className="text-gray-400 hover:text-blue-600 transition duration-200">
                   <Bookmark className="w-5 h-5" />
-                </button>
-                <button className="text-gray-400 hover:text-red-600 transition duration-200">
-                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>

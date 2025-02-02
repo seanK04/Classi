@@ -1,4 +1,5 @@
-import { Share, Settings } from "lucide-react";
+"use client"
+import { Share } from "lucide-react";
 
 export default function ClassesPage() {
   const classList = [
@@ -12,6 +13,30 @@ export default function ClassesPage() {
     },
   ];
 
+  const exportToCSV = () => {
+    const csvContent = [
+      ["ID", "Name", "Department", "Difficulty", "Status", "Course Time"],
+      ...classList.map((item) => [
+        item.id,
+        item.name,
+        item.department,
+        item.difficulty,
+        item.status,
+        item.courseTime,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = "classes.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-blue-50">
       {/* Header */}
@@ -19,23 +44,13 @@ export default function ClassesPage() {
         <div className="flex justify-between items-center px-4 py-3">
           <h1 className="text-xl font-bold text-blue-700">My Classes</h1>
           <div className="flex space-x-4">
-            <Share className="w-6 h-6 text-blue-600 hover:text-blue-800 transition duration-200 cursor-pointer" />
-            <Settings className="w-6 h-6 text-blue-600 hover:text-blue-800 transition duration-200 cursor-pointer" />
+            <Share
+              className="w-6 h-6 text-blue-600 hover:text-blue-800 transition duration-200 cursor-pointer"
+              onClick={exportToCSV}
+            />
           </div>
         </div>
       </header>
-
-      {/* Tabs */}
-      <div className="flex space-x-4 px-4 py-2 bg-blue-100 border-b border-blue-200">
-        {["Enrolled", "Wishlist", "Past Classes"].map((tab) => (
-          <button
-            key={tab}
-            className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-800 rounded-full hover:bg-blue-200 transition duration-200"
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
 
       {/* Ranked List */}
       <div className="p-6 space-y-4">
