@@ -13,7 +13,7 @@ const courseSchema = new mongoose.Schema({
   code: { type: String, required: true, unique: true },
   description: { type: String, required: true },
   department: { type: String, required: true },
-  professors: [{ type: mongoose.Schema.Types.ObjectId, ref: "Professor" }],
+  professors: [{ type: String }],
   prerequisites: [{ type: String }],
   credits: { type: Number, required: true },
   difficulty: { type: Number, default: 0 }, // Avg difficulty rating

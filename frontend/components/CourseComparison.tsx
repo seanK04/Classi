@@ -72,7 +72,9 @@ export default function CourseComparison({ userId, onComplete }: ComparisonProps
       
       await fetch(`/api/users/${userId}/insert-ranking`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           courseId: currentCourse._id,
           position: newPosition,

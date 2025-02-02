@@ -50,9 +50,9 @@ router.get("/", async (req, res) => {
 
 // Add a new course
 router.post("/", async (req, res) => {
-  const { title, code, description, department, prerequisites, credits, tags, semester } = req.body;
+  const { title, code, description, department, professors, prerequisites, credits, tags, semester } = req.body;
   
-  if (!title || !code || !description || !department || !credits) {
+  if (!title || !code || !description || !department || !credits || !professors) {
     return res.status(400).json({ 
       error: "Title, code, description, department, and credits are required" 
     });
@@ -64,6 +64,7 @@ router.post("/", async (req, res) => {
       code,
       description,
       department,
+      professors,
       prerequisites: prerequisites || [],
       credits,
       tags: tags || [],

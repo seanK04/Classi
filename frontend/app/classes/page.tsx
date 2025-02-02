@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Share, Settings, Plus, Trash2 } from 'lucide-react';
 import CourseComparison from '@/components/CourseComparison';
+import CourseSelection from '@/components/CourseSelection';
 
 interface Course {
   _id: string;
@@ -18,11 +19,12 @@ interface RankedCourse {
   rank: number;
 }
 
-// TODO: Replace with actual user ID from auth
-const TEMP_USER_ID = '679e9dbf40e54ab1301b3d83';
+// Using a single hardcoded user ID for the hackathon
+const DEMO_USER_ID = '679e9dbf40e54ab1301b3d83';
 
 export default function ClassesPage() {
   const [activeTab, setActiveTab] = useState('ranked');
+  const [isSelecting, setIsSelecting] = useState(false);
   const [rankedCourses, setRankedCourses] = useState<RankedCourse[]>([]);
   const [isComparing, setIsComparing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export default function ClassesPage() {
   const fetchRankedCourses = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/users/${TEMP_USER_ID}/rankings`, {
+      const response = await fetch(`/api/users/${DEMO_USER_ID}/rankings`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -108,16 +110,27 @@ export default function ClassesPage() {
         ))}
       </div>
 
+      {/* Course Selection Interface */}
+      {isSelecting && (
+        <CourseSelection
+          userId={DEMO_USER_ID}
+          onCourseSelect={(courseId) => {
+            setIsSelecting(false);
+            setIsComparing(true);
+          }}
+        />
+      )}
+
       {/* Comparison Interface */}
-      {isComparing && (
+      {isComparing && !isSelecting && (
         <CourseComparison 
-          userId={TEMP_USER_ID} 
+          userId={DEMO_USER_ID}
           onComplete={handleComparisonComplete} 
         />
       )}
 
       {/* Ranked List */}
-      {!isComparing && (
+      {!isComparing && !isSelecting && (
         <div className="p-6 space-y-4">
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -127,7 +140,7 @@ export default function ClassesPage() {
             <div className="text-center py-12">
               <p className="text-gray-600 mb-4">No ranked courses yet.</p>
               <button
-                onClick={() => setIsComparing(true)}
+                onClick={() => setIsSelecting(true)}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -187,7 +200,7 @@ export default function ClassesPage() {
               ))}
 
               <button
-                onClick={() => setIsComparing(true)}
+                onClick={() => setIsSelecting(true)}
                 className="fixed bottom-16 right-4 flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition duration-200"
               >
                 <Plus className="w-5 h-5 mr-2" />
