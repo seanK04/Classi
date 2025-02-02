@@ -1,3 +1,10 @@
 # Classi
+Reinventing & Gamifying Course Reviewing :)
 
-Next.js + Express.js + MongoDB
+
+
+
+## Tech Stack
+- Next.js (Frontend)
+- Express.js (Backend)
+- MongoDB (Database)
