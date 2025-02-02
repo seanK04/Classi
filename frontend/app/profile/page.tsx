@@ -82,7 +82,7 @@ export default function ProfilePage() {
                 type="text"
                 value={usernameHandle}
                 onChange={(e) => setUsernameHandle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-400"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-400 text-black"
               />
             </div>
 
@@ -135,9 +135,9 @@ export default function ProfilePage() {
       {/* Lists */}
       <div className="mt-4 bg-white py-4 shadow-md rounded-lg mx-4 space-y-2">
         {[
-          { icon: <CheckCircle className="w-5 h-5 text-gray-500" />, label: "Rated", count: 0 },
-          { icon: <Bookmark className="w-5 h-5 text-gray-500" />, label: "Want to Take", count: 0 },
-          { icon: <Heart className="w-5 h-5 text-gray-500" />, label: "Recommended Classes", count: 0 },
+          { icon: <CheckCircle className="w-5 h-5 text-gray-500" />, label: "Rated", count: 11 },
+          { icon: <Bookmark className="w-5 h-5 text-gray-500" />, label: "Want to Take", count: 3 },
+          { icon: <Heart className="w-5 h-5 text-gray-500" />, label: "Recommended Classes", count: 3 },
         ].map((item, index) => (
           <div key={index} className="flex justify-between items-center px-4">
             <div className="flex items-center space-x-2">

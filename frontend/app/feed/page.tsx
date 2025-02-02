@@ -204,7 +204,7 @@ export default function Feed() {
                 <input
                   type="text"
                   placeholder="Add a comment..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-blue-400 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-blue-400 text-sm text-black"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && e.currentTarget.value.trim()) {
                       handleAddComment(activity.id, e.currentTarget.value.trim());
