@@ -1,8 +1,11 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation"; // Import router for navigation
 import { Search, MapPin, Plus, Bookmark } from "lucide-react";
 
 export default function SearchPage() {
+  const router = useRouter(); // Router instance for navigation
+
   const classResults = [
     {
       id: 1,
@@ -29,81 +32,6 @@ export default function SearchPage() {
       name: "Machine Learning",
       time: "1:00pm - 2:15pm",
     },
-    {
-      id: 6,
-      name: "Organic Chemistry I",
-      time: "10:30am - 11:45am",
-    },
-    {
-      id: 7,
-      name: "Genetics",
-      time: "12:00pm - 12:50pm",
-    },
-    {
-      id: 8,
-      name: "Computational Biology",
-      time: "3:30pm - 4:45pm",
-    },
-    {
-      id: 9,
-      name: "Introduction to Neuroscience",
-      time: "8:30am - 9:45am",
-    },
-    {
-      id: 10,
-      name: "Statistical Inference",
-      time: "4:00pm - 5:15pm",
-    },
-    {
-      id: 11,
-      name: "Introduction to Microeconomics",
-      time: "9:30am - 10:45am",
-    },
-    {
-      id: 12,
-      name: "Analytical Mechanics",
-      time: "1:30pm - 2:45pm",
-    },
-    {
-      id: 13,
-      name: "Modern World History",
-      time: "10:00am - 11:15am",
-    },
-    {
-      id: 14,
-      name: "Introduction to Engineering",
-      time: "11:30am - 12:45pm",
-    },
-    {
-      id: 15,
-      name: "Classical Mythology",
-      time: "2:00pm - 3:15pm",
-    },
-    {
-      id: 16,
-      name: "Cognitive Psychology",
-      time: "9:00am - 10:15am",
-    },
-    {
-      id: 17,
-      name: "Introduction to Sociology",
-      time: "12:30pm - 1:45pm",
-    },
-    {
-      id: 18,
-      name: "Introduction to Linguistics",
-      time: "3:00pm - 4:15pm",
-    },
-    {
-      id: 19,
-      name: "Organic Chemistry II",
-      time: "10:30am - 11:45am",
-    },
-    {
-      id: 20,
-      name: "Macroeconomic Theory",
-      time: "1:00pm - 2:15pm",
-    },
   ];
 
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -119,7 +47,6 @@ export default function SearchPage() {
       return;
     }
 
-    // Filter results by matching the beginning of words in the name
     const results = classResults.filter((course) =>
       course.name.toLowerCase().split(" ").some((word) => word.startsWith(query))
     );
@@ -128,7 +55,7 @@ export default function SearchPage() {
 
   const applyFilter = (filter: string) => {
     if (filter === "Trending") {
-      setFilteredResults(classResults.filter((course) => course.id <= 10)); // Example filter
+      setFilteredResults(classResults.filter((course) => course.id <= 3));
     } else {
       setFilteredResults(classResults);
     }
@@ -137,6 +64,13 @@ export default function SearchPage() {
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
     applyFilter(filter);
+  };
+
+  const handleAddClick = (course: { id: number; name: string; time: string }) => {
+    // Pass course object via state and navigate to RankCoursePrompt
+    router.push(`/components/RankCoursePrompt?id=${course.id}`, {
+      state: { course },
+    });
   };
 
   return (
@@ -193,17 +127,20 @@ export default function SearchPage() {
       {/* Search Results */}
       <div className="p-4 space-y-4">
         {filteredResults.length > 0 ? (
-          filteredResults.map((result) => (
+          filteredResults.map((course) => (
             <div
-              key={result.id}
+              key={course.id}
               className="flex items-center justify-between bg-white p-5 rounded-xl shadow-lg border border-blue-200 hover:shadow-xl transition duration-200"
             >
               <div>
-                <p className="font-semibold text-lg text-blue-800">{result.name}</p>
-                <p className="text-sm text-gray-500">{result.time}</p>
+                <p className="font-semibold text-lg text-blue-800">{course.name}</p>
+                <p className="text-sm text-gray-500">{course.time}</p>
               </div>
               <div className="flex items-center space-x-4">
-                <button className="text-gray-400 hover:text-blue-600 transition duration-200">
+                <button
+                  className="text-gray-400 hover:text-blue-600 transition duration-200"
+                  onClick={() => handleAddClick(course)}
+                >
                   <Plus className="w-5 h-5" />
                 </button>
                 <button className="text-gray-400 hover:text-blue-600 transition duration-200">
