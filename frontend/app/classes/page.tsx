@@ -1,10 +1,10 @@
-"use client"
+"use client";
 import { Share } from "lucide-react";
 import { getCourse, getRankings } from "../../lib/rankingSystem";
 
 export default function ClassesPage() {
   const rankings = getRankings();
-  const classList = rankings.map(courseId => {
+  const classList = rankings.map((courseId) => {
     const course = getCourse(courseId);
     return {
       id: course?._id,
@@ -12,7 +12,7 @@ export default function ClassesPage() {
       department: course?.department,
       difficulty: `${course?.difficulty.toFixed(1)}/5.0`,
       status: "Open",
-      courseTime: course?.code,
+      courseCode: course?.code,
     };
   });
 
@@ -25,7 +25,7 @@ export default function ClassesPage() {
         item.department,
         item.difficulty,
         item.status,
-        item.courseTime,
+        item.courseCode,
       ]),
     ]
       .map((row) => row.join(","))
@@ -71,7 +71,7 @@ export default function ClassesPage() {
                 Difficulty: {item.difficulty}
               </p>
               <p className="text-sm text-gray-500">
-                Status: {item.status} • Time: {item.courseTime}
+                Course Code: {item.courseCode}
               </p>
             </div>
           </div>
