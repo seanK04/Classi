@@ -1,113 +1,199 @@
-'use client';
+// 'use client';
 
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
+
+// interface Course {
+//   _id: string;
+//   title: string;
+//   code: string;
+//   rank: number;
+// }
+
+// // Custom hook for ranking logic
+// function useRankingLogic(onComplete: (rank: number) => void) {
+//   const [courses, setCourses] = useState<Course[]>([]);
+//   const [currentIndex, setCurrentIndex] = useState<number>(0);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const fetchCourses = async () => {
+//       try {
+//         const response = await fetch('http://localhost:3001/api/courses');
+//         if (!response.ok) {
+//           throw new Error(`HTTP error! status: ${response.status}`);
+//         }
+//         const fetchedCourses = await response.json();
+//         console.log('🔄 Fetched courses:', fetchedCourses);
+        
+//         // Sort by rank descending (highest rank first)
+//         const sortedCourses = [...fetchedCourses].sort((a, b) => b.rank - a.rank);
+//         console.log('📊 Sorted courses:', sortedCourses);
+        
+//         setCourses(sortedCourses);
+        
+//         if (sortedCourses.length === 0) {
+//           console.log('📝 No existing courses, assigning rank 0');
+//           onComplete(0);
+//         }
+        
+//         setLoading(false);
+//       } catch (error) {
+//         console.error('❌ Failed to fetch courses:', error);
+//         setLoading(false);
+//       }
+//     };
+//     fetchCourses();
+//   }, [onComplete]);
+
+//   const handlePreference = (preferNew: boolean) => {
+//     console.log('👆 Preference:', preferNew ? 'New Course' : 'Existing Course', 'at index:', currentIndex);
+    
+//     if (preferNew) {
+//       // If we prefer the new course, it should go above the current course
+//       const newRank = courses[currentIndex].rank + 1;
+//       console.log('✅ Placing above current course with rank:', newRank);
+//       onComplete(newRank);
+//     } else {
+//       // If we prefer the existing course, move to next course or finish
+//       if (currentIndex === courses.length - 1) {
+//         // We've reached the end, place at bottom
+//         console.log('✅ Reached end, placing at bottom with rank 0');
+//         onComplete(0);
+//       } else {
+//         // Move to next course
+//         setCurrentIndex(currentIndex + 1);
+//         console.log('➡️ Moving to next course at index:', currentIndex + 1);
+//       }
+//     }
+//   };
+
+//   return {
+//     loading,
+//     currentCourse: courses[currentIndex] || null,
+//     handlePreference
+//   };
+// }
+
+// interface RankCoursePromptProps {
+//   newCourse: { title: string; code: string };
+//   onComplete: (rank: number) => void;
+//   onCancel: () => void;
+// }
+
+// // UI Component
+// export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: RankCoursePromptProps) {
+//   const { loading, currentCourse, handlePreference } = useRankingLogic(onComplete);
+
+//   if (loading) {
+//     return (
+//       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+//         <div className="bg-white p-6 rounded-lg shadow-lg">
+//           <p>Loading courses...</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (!currentCourse) {
+//     return null;
+//   }
+
+//   return (
+//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+//       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+//         <h2 className="text-xl text-black font-bold mb-4">Which course do you prefer?</h2>
+        
+//         <div className="grid grid-cols-2 gap-4">
+//           {/* New Course Button */}
+//           <button
+//             onClick={() => handlePreference(true)}
+//             className="p-4 border rounded hover:bg-gray-50 transition-colors"
+//           >
+//             <h3 className="font-bold text-black">{newCourse.title}</h3>
+//             <p className="text-sm text-gray-600">{newCourse.code}</p>
+//           </button>
+
+//           {/* Comparison Course Button */}
+//           <button
+//             onClick={() => handlePreference(false)}
+//             className="p-4 border rounded hover:bg-gray-50 transition-colors"
+//           >
+//             <h3 className="font-bold text-black">{currentCourse.title}</h3>
+//             <p className="text-sm text-gray-600">{currentCourse.code}</p>
+//           </button>
+//         </div>
+
+//         <button 
+//           onClick={onCancel}
+//           className="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+//         >
+//           Cancel
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
+import { useEffect, useState } from "react";
 
 interface Course {
-  _id: string;
+  id: string;
   title: string;
   code: string;
-  rank: number;
 }
 
-interface RankCoursePromptProps {
-  newCourse: { title: string; code: string };
-  onComplete: (rank: number) => void;
-  onCancel: () => void;
-}
+const fetchCourses = async (): Promise<Course[]> => {
+  const response = await fetch("/api/courses");
+  return response.json();
+};
 
-export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: RankCoursePromptProps) {
-  const [rankedCourses, setRankedCourses] = useState<Course[]>([]);
-  const [currentComparison, setCurrentComparison] = useState<Course | null>(null);
+const RankCoursePrompt = ({ newCourse, onCancel }: { newCourse: Course, onCancel: () => void }) => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [insertionIndex, setInsertionIndex] = useState(0);
   const [low, setLow] = useState(0);
   const [high, setHigh] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [finished, setFinished] = useState(false);
 
-  // Fetch ranked courses on component mount
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/courses');
-        const courses = await response.json();
-        // Courses are already sorted by rank from the backend
-        const sortedCourses = courses;
-        setRankedCourses(sortedCourses);
-        setHigh(sortedCourses.length);
-        // Start with middle course if any exist
-        if (sortedCourses.length > 0) {
-          setCurrentComparison(sortedCourses[Math.floor(sortedCourses.length / 2)]);
-        } else {
-          // If no courses exist, assign rank of 0
-          handleComplete(0);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch courses:', error);
-        setLoading(false);
-      }
-    };
-    fetchCourses();
+    fetchCourses().then((data) => {
+      setCourses(data);
+      setHigh(data.length);
+    });
   }, []);
 
-  const handlePrefer = (preferNew: boolean) => {
-    if (!currentComparison) return;
+  const handlePreference = (preferNew: boolean) => {
+    if (preferNew) {
+      setHigh(currentIndex);
+    } else {
+      setLow(currentIndex + 1);
+    }
 
     const mid = Math.floor((low + high) / 2);
-    
-    if (high - low <= 1) {
-      // We've found the insertion point
-      // If preferNew is true, insert at current position
-      // If preferNew is false, insert after current position
-      const insertionIndex = preferNew ? currentComparison.rank - 1 : currentComparison.rank;
-      const newRank = insertionIndex + 1;
-      
-      // All courses after this point will need their ranks incremented by 1
-      // This will be handled by the backend when saving the new course
-      handleComplete(newRank);
-      return;
-    }
-
-    if (preferNew) {
-      // New course is preferred, look in upper half
-      setHigh(mid);
-      const nextIndex = Math.floor((low + mid) / 2);
-      setCurrentComparison(rankedCourses[nextIndex]);
+    if (low < high) {
+      setCurrentIndex(mid);
     } else {
-      // Existing course is preferred, look in lower half
-      setLow(mid);
-      const nextIndex = Math.floor((mid + high) / 2);
-      setCurrentComparison(rankedCourses[nextIndex]);
+      setInsertionIndex(low);
+      setFinished(true);
     }
   };
 
-  const handleComplete = (rank: number) => {
-    onComplete(rank);
+  const finalizeRanking = () => {
+    const updatedCourses = [...courses];
+    updatedCourses.splice(insertionIndex, 0, newCourse);
+    setCourses(updatedCourses);
   };
 
-  if (loading) {
+  if (!courses.length) return <p>Loading courses...</p>;
+  if (finished)
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <p>Loading courses...</p>
-        </div>
+      <div>
+        <p>{`New course will be ranked at position ${insertionIndex + 1}`}</p>
+        <button onClick={finalizeRanking} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Confirm</button>
       </div>
     );
-  }
 
-  if (!currentComparison && rankedCourses.length > 0) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <p>Error loading comparison</p>
-          <button 
-            onClick={onCancel}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const currentCourse = courses[currentIndex];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -115,22 +201,20 @@ export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: Ra
         <h2 className="text-xl text-black font-bold mb-4">Which course do you prefer?</h2>
         
         <div className="grid grid-cols-2 gap-4">
-          {/* New Course Button */}
           <button
-            onClick={() => handlePrefer(true)}
+            onClick={() => handlePreference(true)}
             className="p-4 border rounded hover:bg-gray-50 transition-colors"
           >
             <h3 className="font-bold text-black">{newCourse.title}</h3>
             <p className="text-sm text-gray-600">{newCourse.code}</p>
           </button>
 
-          {/* Comparison Course Button */}
           <button
-            onClick={() => handlePrefer(false)}
+            onClick={() => handlePreference(false)}
             className="p-4 border rounded hover:bg-gray-50 transition-colors"
           >
-            <h3 className="font-bold text-black">{currentComparison?.title}</h3>
-            <p className="text-sm text-gray-600">{currentComparison?.code}</p>
+            <h3 className="font-bold text-black">{currentCourse.title}</h3>
+            <p className="text-sm text-gray-600">{currentCourse.code}</p>
           </button>
         </div>
 
@@ -143,4 +227,6 @@ export default function RankCoursePrompt({ newCourse, onComplete, onCancel }: Ra
       </div>
     </div>
   );
-}
+};
+
+export default RankCoursePrompt;
