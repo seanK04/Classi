@@ -67,6 +67,7 @@ const courses = [
 ];
 
 const testUser = {
+  _id: '679e9dbf40e54ab1301b3d83',
   name: 'Test User',
   email: 'test@example.com',
   preferences: {

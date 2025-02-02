@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share, Settings, Plus } from 'lucide-react';
+import { Share, Settings, Plus, Trash2 } from 'lucide-react';
 import CourseComparison from '@/components/CourseComparison';
 
 interface Course {
@@ -141,19 +141,47 @@ export default function ClassesPage() {
                   key={course._id}
                   className="flex items-start justify-between bg-white p-5 rounded-xl shadow-lg border border-blue-200 hover:shadow-xl transition duration-200"
                 >
-                  <div className="flex-1">
-                    <p className="font-semibold text-lg text-blue-800">
-                      {index + 1}. {course.code} - {course.title}
-                    </p>
-                    <p className="text-sm text-blue-600">{course.department}</p>
-                    <div className="mt-1 space-x-4">
-                      <span className="text-sm text-gray-500">
-                        Difficulty: {course.difficulty.toFixed(1)}/5.0
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        Workload: {course.workload.toFixed(1)}/5.0
-                      </span>
+                  <div className="flex justify-between items-start w-full">
+                    <div className="flex-1">
+                      <p className="font-semibold text-lg text-blue-800">
+                        {index + 1}. {course.code} - {course.title}
+                      </p>
+                      <p className="text-sm text-blue-600">{course.department}</p>
+                      <div className="mt-1 space-x-4">
+                        <span className="text-sm text-gray-500">
+                          Difficulty: {course.difficulty.toFixed(1)}/5.0
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          Workload: {course.workload.toFixed(1)}/5.0
+                        </span>
+                      </div>
                     </div>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Are you sure you want to delete this course from your rankings? This action cannot be undone.')) {
+                          try {
+                            const response = await fetch(`/api/courses/${course._id}`, {
+                              method: 'DELETE',
+                            });
+                            
+                            if (!response.ok) {
+                              throw new Error('Failed to delete course');
+                            }
+                            
+                            // Show success message
+                            setError(null);
+                            fetchRankedCourses();
+                          } catch (err) {
+                            console.error('Error deleting course:', err);
+                            setError('Unable to delete course. Please try again later.');
+                          }
+                        }
+                      }}
+                      className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                      title="Delete course"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               ))}

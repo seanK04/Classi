@@ -175,4 +175,25 @@ router.get("/:id/stats", async (req, res) => {
   }
 });
 
+// Delete a course
+router.delete("/:id", async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    // Remove course from all users' rankings
+    await User.updateMany(
+      { "rankedCourses.course": req.params.id },
+      { $pull: { rankedCourses: { course: req.params.id } } }
+    );
+
+    await Course.findByIdAndDelete(req.params.id);
+    res.json({ message: "Course deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

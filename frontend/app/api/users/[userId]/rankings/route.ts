@@ -6,8 +6,16 @@ export async function GET(
   request: Request,
   { params }: { params: { userId: string } }
 ) {
+  const { userId } = params;
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'User ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
-    const response = await fetch(`${API_URL}/api/users/${params.userId}/rankings`);
+    const response = await fetch(`${API_URL}/api/users/${userId}/rankings`);
     const data = await response.json();
 
     if (!response.ok) {

@@ -6,11 +6,19 @@ export async function POST(
   request: Request,
   { params }: { params: { userId: string } }
 ) {
+  const { userId } = params;
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'User ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
     const body = await request.json();
 
     const response = await fetch(
-      `${API_URL}/api/users/${params.userId}/insert-ranking`,
+      `${API_URL}/api/users/${userId}/insert-ranking`,
       {
         method: 'POST',
         headers: {

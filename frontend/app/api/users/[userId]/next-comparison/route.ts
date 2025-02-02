@@ -6,13 +6,21 @@ export async function GET(
   request: Request,
   { params }: { params: { userId: string } }
 ) {
+  const { userId } = params;
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'User ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const left = searchParams.get('left');
     const right = searchParams.get('right');
 
     const response = await fetch(
-      `${API_URL}/api/users/${params.userId}/next-comparison?left=${left || ''}&right=${right || ''}`
+      `${API_URL}/api/users/${userId}/next-comparison?left=${left || '0'}&right=${right || '0'}`
     );
     const data = await response.json();
 

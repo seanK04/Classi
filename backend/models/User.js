@@ -40,25 +40,58 @@ userSchema.methods.addAchievement = async function(type, name, description) {
 
 // Method to get next course for comparison during binary search
 userSchema.methods.getNextComparisonCourse = function(left, right) {
+  // Sort rankings by rank to maintain order
   const currentRankings = this.rankedCourses.sort((a, b) => a.rank - b.rank);
-  if (currentRankings.length === 0) return null;
+  
+  // If this is the first ranking, no comparison needed
+  if (currentRankings.length === 0) {
+    return { isComplete: true };
+  }
+  
+  // If binary search bounds have crossed, we've found the position
+  if (left > right) {
+    return { isComplete: true };
+  }
   
   const mid = Math.floor((left + right) / 2);
+  
+  // Return the course at the middle position for comparison
+  // This will be used to determine if the new course should be ranked higher or lower
   return {
-    course: currentRankings[mid]?.course,
+    course: currentRankings[mid].course,
     position: mid,
-    isComplete: left >= right
+    isComplete: false
   };
 };
 
 // Method to update rankings using interactive binary search
 userSchema.methods.insertCourseRanking = async function(courseId, position) {
+  // Check if course is already ranked
+  const existingIndex = this.rankedCourses.findIndex(
+    rc => rc.course.toString() === courseId.toString()
+  );
+  
+  // If course exists, remove it to be reinserted at new position
+  if (existingIndex !== -1) {
+    const oldRank = this.rankedCourses[existingIndex].rank;
+    this.rankedCourses.splice(existingIndex, 1);
+    
+    // Adjust ranks of courses that were between old and new position
+    this.rankedCourses.forEach(rc => {
+      if (oldRank < position && rc.rank > oldRank && rc.rank <= position) {
+        rc.rank -= 1;
+      } else if (oldRank > position && rc.rank >= position && rc.rank < oldRank) {
+        rc.rank += 1;
+      }
+    });
+  }
+  
   const currentRankings = this.rankedCourses.sort((a, b) => a.rank - b.rank);
   
   // If this is the first course being ranked
   if (currentRankings.length === 0) {
     this.rankedCourses.push({ course: courseId, rank: 0 });
-    this.stats.totalRankings += 1;
+    if (existingIndex === -1) this.stats.totalRankings += 1;
     await this.save();
     return 0;
   }
@@ -72,7 +105,7 @@ userSchema.methods.insertCourseRanking = async function(courseId, position) {
   
   // Insert the new course at the determined position
   this.rankedCourses.push({ course: courseId, rank: position });
-  this.stats.totalRankings += 1;
+  if (existingIndex === -1) this.stats.totalRankings += 1;
   
   // Check for ranking milestones
   const milestones = [10, 25, 50, 100];

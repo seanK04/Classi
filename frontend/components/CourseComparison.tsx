@@ -21,14 +21,25 @@ export default function CourseComparison({ userId, onComplete }: ComparisonProps
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
   const [position, setPosition] = useState<number>(0);
   const [left, setLeft] = useState<number>(0);
-  const [right, setRight] = useState<number | null>(null);
+  const [right, setRight] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Get initial rankings count to set right bound
+  const fetchInitialRankings = async () => {
+    try {
+      const response = await fetch(`/api/users/${userId}/rankings`);
+      const rankings = await response.json();
+      setRight(rankings.length);
+    } catch (error) {
+      console.error('Error fetching rankings:', error);
+    }
+  };
 
   const fetchNextComparison = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/users/${userId}/next-comparison?left=${left}&right=${right ?? ''}`,
+        `/api/users/${userId}/next-comparison?left=${left}&right=${right}`,
         {
           method: 'GET',
           headers: {
@@ -82,7 +93,11 @@ export default function CourseComparison({ userId, onComplete }: ComparisonProps
   };
 
   useEffect(() => {
-    fetchNextComparison();
+    const initializeComparison = async () => {
+      await fetchInitialRankings();
+      await fetchNextComparison();
+    };
+    initializeComparison();
   }, [userId]);
 
   if (loading) {
