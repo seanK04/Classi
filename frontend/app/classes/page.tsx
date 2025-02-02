@@ -1,28 +1,40 @@
 "use client"
 import { Share } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface Course {
+  _id: string;
+  title: string;
+  code: string;
+  rank: number;
+}
 
 export default function ClassesPage() {
-  const classList = [
-    {
-      id: 1,
-      name: "Introduction to Object Oriented Programming",
-      department: "Computer Science",
-      difficulty: "3.6/5.0",
-      status: "Open",
-      courseTime: "10:00am - 10:50am",
-    },
-  ];
+  const [classList, setClassList] = useState<Course[]>([]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('/api/courses');
+        const data = await response.json();
+        // Sort by rank in ascending order (1 to n)
+        const sortedCourses = data.sort((a: Course, b: Course) => a.rank - b.rank);
+        setClassList(sortedCourses);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const exportToCSV = () => {
     const csvContent = [
-      ["ID", "Name", "Department", "Difficulty", "Status", "Course Time"],
+      ["Rank", "Title", "Code"],
       ...classList.map((item) => [
-        item.id,
-        item.name,
-        item.department,
-        item.difficulty,
-        item.status,
-        item.courseTime,
+        item.rank,
+        item.title,
+        item.code,
       ]),
     ]
       .map((row) => row.join(","))
@@ -56,19 +68,16 @@ export default function ClassesPage() {
       <div className="p-6 space-y-4">
         {classList.map((item, index) => (
           <div
-            key={item.id}
+            key={item._id}
             className="flex items-start justify-between bg-white p-5 rounded-xl shadow-lg border border-blue-200 hover:shadow-xl transition duration-200"
           >
             <div className="flex-1">
               <p className="font-semibold text-lg text-blue-800">
-                {index + 1}. {item.name}
+                {index + 1}. {item.title}
               </p>
-              <p className="text-sm text-blue-600">{item.department}</p>
+              <p className="text-sm text-blue-600">{item.code}</p>
               <p className="text-sm text-gray-500">
-                Difficulty: {item.difficulty}
-              </p>
-              <p className="text-sm text-gray-500">
-                Status: {item.status} • Time: {item.courseTime}
+                Rank: {item.rank}
               </p>
             </div>
           </div>

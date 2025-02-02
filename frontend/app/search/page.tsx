@@ -1,11 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // Import router for navigation
 import { Search, MapPin, Plus, Bookmark } from "lucide-react";
+import RankCoursePrompt from "@/components/RankCoursePrompt";
 
 export default function SearchPage() {
-  const router = useRouter(); // Router instance for navigation
-
   const classResults = [
     {
       id: 1,
@@ -37,6 +35,8 @@ export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filteredResults, setFilteredResults] = useState(classResults);
   const [activeFilter, setActiveFilter] = useState<string>("Trending");
+  const [showRankPrompt, setShowRankPrompt] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<{title: string; code: string} | null>(null);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
@@ -67,10 +67,11 @@ export default function SearchPage() {
   };
 
   const handleAddClick = (course: { id: number; name: string; time: string }) => {
-    // Pass course object via state and navigate to RankCoursePrompt
-    router.push(`/components/RankCoursePrompt?id=${course.id}`, {
-      state: { course },
+    setSelectedCourse({
+      title: course.name,
+      code: course.id.toString()
     });
+    setShowRankPrompt(true);
   };
 
   return (
@@ -153,6 +154,36 @@ export default function SearchPage() {
           <p className="text-center text-gray-500">No results found.</p>
         )}
       </div>
+
+      {/* Rank Course Prompt */}
+      {showRankPrompt && selectedCourse && (
+        <RankCoursePrompt
+          newCourse={selectedCourse}
+          onComplete={async (rank) => {
+            try {
+              await fetch('http://localhost:3001/api/courses', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  title: selectedCourse.title,
+                  code: selectedCourse.code,
+                  rank
+                })
+              });
+              setShowRankPrompt(false);
+              setSelectedCourse(null);
+            } catch (error) {
+              console.error('Failed to save course:', error);
+            }
+          }}
+          onCancel={() => {
+            setShowRankPrompt(false);
+            setSelectedCourse(null);
+          }}
+        />
+      )}
     </div>
   );
 }

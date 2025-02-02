@@ -16,10 +16,8 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Import routes
-const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 
-app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
 
 const PORT = process.env.PORT || 5000;
