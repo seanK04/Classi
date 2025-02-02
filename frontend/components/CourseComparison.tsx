@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { findInsertionPosition, insertCourse, getRankingsSize, getRankings } from '../lib/rankingSystem';
+import {
+  findInsertionPosition,
+  insertCourse,
+  getRankingsSize,
+  getRankings,
+} from '../lib/rankingSystem';
 
 interface Course {
   _id: string;
@@ -36,12 +41,12 @@ export default function CourseComparison({ userId, onComplete, courseToCompare }
       console.log('No new course to compare');
       return;
     }
-    
+
     try {
       console.log('Getting next comparison with bounds:', { left, right });
       const { position: newPosition, courseToCompare, isComplete } = findInsertionPosition(left, right);
       console.log('Got comparison result:', { newPosition, courseToCompare, isComplete });
-      
+
       if (isComplete) {
         console.log('Comparison complete, inserting course at position:', newPosition);
         insertCourse(newCourse, newPosition);
@@ -67,7 +72,7 @@ export default function CourseComparison({ userId, onComplete, courseToCompare }
         _id: courseToCompare.id.toString(),
         title: courseToCompare.name,
         code: courseToCompare.time,
-        department: "",
+        department: '',
         difficulty: 0,
         workload: 0,
       };
@@ -91,7 +96,7 @@ export default function CourseComparison({ userId, onComplete, courseToCompare }
     try {
       console.log('Handling choice:', higher ? 'higher' : 'lower');
       setLoading(true);
-      
+
       // Update binary search bounds
       if (higher) {
         console.log('Moving bounds right:', { newLeft: position + 1, right });
@@ -121,12 +126,16 @@ export default function CourseComparison({ userId, onComplete, courseToCompare }
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto my-8">
       <h2 className="text-xl font-bold text-center text-blue-800 mb-6">
-        Compare These Courses
+        Which Of The Two Courses Did You Prefer?
       </h2>
-      
-      <div className="space-y-4">
-        {/* New Course */}
-        <div className="bg-blue-50 rounded-lg p-4">
+
+      {/* Instead of two buttons at the bottom, make the two courses themselves clickable. */}
+      <div className="flex gap-4">
+        {/* New Course - clicking picks the "top" choice (handleChoice(false)) */}
+        <div
+          onClick={() => handleChoice(false)}
+          className="cursor-pointer bg-blue-50 rounded-lg p-4 flex-1 hover:bg-blue-100 transition"
+        >
           <h3 className="font-semibold text-lg text-blue-900">
             {newCourse.code} - {newCourse.title}
           </h3>
@@ -141,9 +150,12 @@ export default function CourseComparison({ userId, onComplete, courseToCompare }
           </div>
         </div>
 
-        {/* Comparison Course */}
+        {/* Comparison Course - clicking picks the "bottom" choice (handleChoice(true)) */}
         {comparisonCourse && (
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div
+            onClick={() => handleChoice(true)}
+            className="cursor-pointer bg-gray-50 rounded-lg p-4 flex-1 hover:bg-gray-100 transition"
+          >
             <h3 className="font-semibold text-lg text-gray-900">
               {comparisonCourse.code} - {comparisonCourse.title}
             </h3>
@@ -158,23 +170,6 @@ export default function CourseComparison({ userId, onComplete, courseToCompare }
             </div>
           </div>
         )}
-      </div>
-
-      <div className="flex justify-center space-x-4 mt-6">
-        <button
-          onClick={() => handleChoice(false)}
-          className="flex items-center px-6 py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition duration-200"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Rank Lower
-        </button>
-        <button
-          onClick={() => handleChoice(true)}
-          className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-        >
-          Rank Higher
-          <ArrowRight className="w-5 h-5 ml-2" />
-        </button>
       </div>
     </div>
   );
