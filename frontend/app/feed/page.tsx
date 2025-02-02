@@ -83,8 +83,14 @@ export default function Feed() {
 
     const filtered = activities.filter(
       (activity) =>
-        activity.user.toLowerCase().includes(query) ||
-        activity.course.toLowerCase().includes(query)
+        activity.user
+          .toLowerCase()
+          .split(" ")
+          .some((word) => word.startsWith(query)) ||
+        activity.course
+          .toLowerCase()
+          .split(" ")
+          .some((word) => word.startsWith(query))
     );
     setFilteredActivities(filtered);
   };
