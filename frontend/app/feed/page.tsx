@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Bell, Menu, Heart, Bookmark, PlusCircle } from "lucide-react";
+import { Bell, Menu, Heart, Bookmark } from "lucide-react";
 
 interface Activity {
   id: number;
@@ -83,8 +83,14 @@ export default function Feed() {
 
     const filtered = activities.filter(
       (activity) =>
-        activity.user.toLowerCase().includes(query) ||
-        activity.course.toLowerCase().includes(query)
+        activity.user
+          .toLowerCase()
+          .split(" ")
+          .some((word) => word.startsWith(query)) ||
+        activity.course
+          .toLowerCase()
+          .split(" ")
+          .some((word) => word.startsWith(query))
     );
     setFilteredActivities(filtered);
   };
@@ -227,12 +233,6 @@ export default function Feed() {
               >
                 <Bookmark className="w-5 h-5 transition duration-200" />
                 <span className="text-sm">Save</span>
-              </div>
-
-              {/* Add Button */}
-              <div className="flex items-center space-x-1 cursor-pointer">
-                <PlusCircle className="w-5 h-5 hover:text-blue-500 transition duration-200" />
-                <span className="text-sm">Add</span>
               </div>
             </div>
           </div>

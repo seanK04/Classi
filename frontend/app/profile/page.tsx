@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from "react";
-import { Share2, CheckCircle, Bookmark, Heart } from "lucide-react";
+import { CheckCircle, Bookmark, Heart } from "lucide-react";
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -27,12 +27,12 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-blue-50 overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 bg-white shadow-md z-50">
-        <div className="flex items-center justify-between px-4 py-4">
-          <h1 className="text-xl font-bold text-blue-700">{username}</h1>
-          <button className="text-gray-500 hover:text-blue-700 transition duration-200">
-            <Share2 className="w-6 h-6" />
-          </button>
+      <header className="sticky top-0 bg-white shadow-md z-50 w-full">
+        <div className="relative w-full px-4 py-4">
+          {/* Center Khoi Le in the header */}
+          <h1 className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold text-blue-700">
+            {username}
+          </h1>
         </div>
       </header>
 
@@ -151,3 +151,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+
