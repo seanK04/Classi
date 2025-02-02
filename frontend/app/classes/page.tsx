@@ -1,17 +1,20 @@
 "use client"
 import { Share } from "lucide-react";
+import { getCourse, getRankings } from "../../lib/rankingSystem";
 
 export default function ClassesPage() {
-  const classList = [
-    {
-      id: 1,
-      name: "Introduction to Object Oriented Programming",
-      department: "Computer Science",
-      difficulty: "3.6/5.0",
+  const rankings = getRankings();
+  const classList = rankings.map(courseId => {
+    const course = getCourse(courseId);
+    return {
+      id: course?._id,
+      name: course?.title,
+      department: course?.department,
+      difficulty: `${course?.difficulty.toFixed(1)}/5.0`,
       status: "Open",
-      courseTime: "10:00am - 10:50am",
-    },
-  ];
+      courseTime: course?.code,
+    };
+  });
 
   const exportToCSV = () => {
     const csvContent = [
