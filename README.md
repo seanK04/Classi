@@ -1,5 +1,5 @@
 # Classi
-Reinventing & Gamifying Course Reviewing :)
+Reinventing & Gamifying Course Reviews :)
 
 
 
